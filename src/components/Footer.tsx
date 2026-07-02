@@ -1,7 +1,6 @@
 
 import React from 'react';
 import type { LinksData } from '../types';
-import { LINKS } from '../constants';
 
 interface FooterProps {
   linksData: LinksData;

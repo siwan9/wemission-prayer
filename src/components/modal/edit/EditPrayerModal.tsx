@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import type { Role, PrayerRegistration, EditStep, PrayerFormData, SettingDataReadDto, PrayerRegistrationReadDto } from '../../../types';
+import type { PrayerRegistration, EditStep, PrayerRegistrationReadDto } from '../../../types';
 import SearchView from './SearchView';
 import PinVerifyView from './PinVerifyView';
 

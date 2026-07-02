@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PrayerRegistrationReadDto, PrayerRegistration } from "../../../types";
+import type { PrayerRegistrationReadDto } from "../../../types";
 
 interface PinVerifyViewProps {
     prayer: PrayerRegistrationReadDto;
