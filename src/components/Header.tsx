@@ -19,8 +19,8 @@ const Header: React.FC<HeaderProps> = ({ settingData }) => {
     flex flex-col
     items-center
     text-center
-    pt-24
-    pb-20 
+    pt-20
+    pb-10 
   "
 >
     <span
@@ -36,28 +36,29 @@ const Header: React.FC<HeaderProps> = ({ settingData }) => {
 </span>
 
     <h1
-  className="
-    font-pixel
-    mt-6
-    text-[3.4rem]
-    sm:text-[4.2rem]
-    md:text-[5.2rem]
-    leading-[0.85]
-    tracking-[-0.03em]
-    select-none
-  "
-  style={{
-    color: "#f9a8d4",
-    textShadow: `
-      2px 2px 0 #f472b6,
-      4px 4px 0 #db2777,
-      6px 6px 0 #7e22ce
-    `,
-    transform: "scaleY(0.95)"
-  }}
->
-  {settingData.campTitle}
-</h1>
+      className="
+        font-pixel
+        mt-6
+        text-[3.4rem]
+        sm:text-[4.2rem]
+        md:text-[5.2rem]
+        leading-[1.2]
+        md:leading-[0.85]
+        tracking-[-0.03em]
+        select-none
+      "
+      style={{
+        color: "#f9a8d4",
+        textShadow: `
+          2px 2px 0 #f472b6,
+          4px 4px 0 #db2777,
+          6px 6px 0 #7e22ce
+        `,
+        transform: "scaleY(0.95)"
+      }}
+    >
+      {settingData.campTitle}
+    </h1>
 
     <p
       className="

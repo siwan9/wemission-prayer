@@ -31,15 +31,36 @@ const RelayFormModal = ({
   }));
 
   const calendarDays = useMemo(() => {
-    const days = [];
-    const curr = new Date(settingData.serviceStartDate);
-    const end = new Date(settingData.serviceEndDate);
+    const days: (string | null)[] = [];
+
+    const start = new Date(settingData.serviceStartDate + "T12:00:00");
+    const end = new Date(settingData.serviceEndDate + "T12:00:00");
+
+    const firstDay = start.getDay();
+
+    for (let i = 0; i < firstDay; i++) {
+      days.push(null);
+    }
+
+    const curr = new Date(start);
+
     while (curr <= end) {
-      days.push(curr.toISOString().split('T')[0]);
+      const year = curr.getFullYear();
+      const month = String(curr.getMonth() + 1).padStart(2, "0");
+      const day = String(curr.getDate()).padStart(2, "0");
+
+      days.push(`${year}-${month}-${day}`);
+
       curr.setDate(curr.getDate() + 1);
     }
+
+    // 마지막 줄도 7칸이 되도록 빈칸 추가
+    while (days.length % 7 !== 0) {
+      days.push(null);
+    }
+
     return days;
-  }, []);
+  }, [settingData.serviceStartDate, settingData.serviceEndDate]);
 
   const toggleDate = (date: string) => {
     setPrayerFormData(prev => ({
@@ -152,16 +173,28 @@ const RelayFormModal = ({
                   <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                     <div className="grid grid-cols-7 gap-1">
                       {['일','월','화','수','목','금','토'].map(d => <div key={d} className="text-[10px] text-center text-gray-600 py-1">{d}</div>)}
-                      {calendarDays.map(dateStr => {
+                      {calendarDays.map((dateStr, index) => {
+                        if (dateStr === null) {
+                          return (
+                            <div
+                              key={`empty-${index}`}
+                              className="aspect-square"
+                            />
+                          );
+                        }
+
                         const isSelected = prayerformData.dates.includes(dateStr);
-                        const day = new Date(dateStr).getDate();
+                        const day = Number(dateStr.slice(8, 10));
+
                         return (
                           <button
                             key={dateStr}
                             type="button"
                             onClick={() => toggleDate(dateStr)}
                             className={`aspect-square flex items-center justify-center rounded-lg text-xs transition-all ${
-                              isSelected ? 'bg-red-600 text-white font-bold shadow-lg shadow-red-900/30' : 'text-gray-400 hover:bg-white/10'
+                              isSelected
+                                ? "bg-red-600 text-white font-bold shadow-lg shadow-red-900/30"
+                                : "text-gray-400 hover:bg-white/10"
                             }`}
                           >
                             {day}
