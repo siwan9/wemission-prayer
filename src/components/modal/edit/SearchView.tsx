@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import type { PrayerRegistration, PrayerRegistrationReadDto } from "../../../types";
+import type { PrayerRegistrationReadDto } from "../../../types";
 
 interface SearchViewProps {
     keyword: string;
