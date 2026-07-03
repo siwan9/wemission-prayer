@@ -107,9 +107,9 @@ const RelayFormModal = ({
     }
   };
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-md animate-fadeIn">
-        <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-6 md:p-10 shadow-2xl flex flex-col max-h-[90vh]">
-          <div className="flex justify-between items-center mb-8">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/20 backdrop-blur-md animate-fadeIn">
+        <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-4 md:p-10 shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="flex justify-between items-center mb-8 mt-2 ml-2">
             <div>
               <h2 className="text-2xl font-bold text-white">
                 금식기도 신청
