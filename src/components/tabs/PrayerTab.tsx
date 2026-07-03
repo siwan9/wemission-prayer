@@ -23,16 +23,44 @@ interface PrayerTabProps {
 
 const PrayerTab: React.FC<PrayerTabProps> = ({ 
   registrations, settingData, campDates, onRegister, onVerifyPin, onUpdate, onDelete }) => {
-  const [selectedDate, setSelectedDate] = useState<string | null>(settingData.serviceStartDate);
+  
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPrayer, setEditingPrayer] = useState<PrayerRegistration | null>(null);
+  
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+  const getTodayString = () => formatDate(new Date());
 
+  const getInitialSelectedDate = () => {
+    const today = getTodayString();
+
+    if (
+      today >= settingData.serviceStartDate &&
+      today <= settingData.serviceEndDate
+    ) {
+      return today;
+    }
+
+    return settingData.serviceStartDate;
+  };
+  const [selectedDate, setSelectedDate] = useState<string | null>(getInitialSelectedDate());
+
+
+  const parseLocalDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+  
   const calendarDays = useMemo(() => {
     const days = [];
-    const start = new Date(settingData.serviceStartDate);
-    const end = new Date(settingData.serviceEndDate);
+    const start = parseLocalDate(settingData.serviceStartDate);
+    const end = parseLocalDate(settingData.serviceEndDate);
     
     const firstDay = new Date(start);
     while (firstDay.getDay() !== 0) {
@@ -46,7 +74,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
 
     const curr = new Date(firstDay);
     while (curr <= lastDay) {
-      days.push(curr.toISOString().split('T')[0]);
+      days.push(formatDate(curr));
       curr.setDate(curr.getDate() + 1);
     }
     return days;
@@ -102,14 +130,14 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
       <div className="lg:col-span-8 bg-white/5 rounded-[2rem] p-4 md:p-8 border border-white/10 shadow-2xl backdrop-blur-sm">
         <div className="grid grid-cols-7 mb-4">
           {weekDays.map(day => (
-            <div key={day} className={`text-center text-[10px] md:text-xs font-bold py-2 ${day === '일' ? 'text-red-500' : day === '토' ? 'text-purple-400' : 'text-gray-500'}`}>
+            <div key={day} className={`text-center text-[10px] md:text-xs font-bold py-2 ${day === '일' ? 'text-red-500' : day === '토' ? 'text-purple-400' : 'text-gray-400'}`}>
               {day}
             </div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-          {calendarDays.map((dateStr) => {
-            const date = new Date(dateStr);
+          {calendarDays.map((dateStr, index) => {
+            const date = parseLocalDate(dateStr);
             const isSelected = selectedDate === dateStr;
             const dailyRegs = getRegistrationsForDate(dateStr);
             const count = dailyRegs.length;
@@ -119,37 +147,122 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
             const isSunday = date.getDay() === 0;
             const isSaturday = date.getDay() === 6;
 
+            const prevDate = index > 0 ? parseLocalDate(calendarDays[index - 1]) : null;
+            const showMonth =
+              dateStr === settingData.serviceStartDate ||
+              (prevDate && prevDate.getMonth() !== date.getMonth());
+
             return (
               <button
                 key={dateStr}
                 onClick={() => isInRange && setSelectedDate(dateStr)}
                 disabled={!isInRange}
-                className={`relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-500 ${
-                  !isInRange ? 'opacity-[0.05] cursor-default' :
-                  isSelected ? 'ring-2 ring-red-600 z-10 scale-105 bg-white/15 shadow-xl shadow-red-900/20' : 'hover:bg-white/10 bg-white/5'
-                }`}
+                className={`relative
+                  aspect-[0.95]
+                  sm:aspect-square
+                  rounded-xl
+                  overflow-hidden
+                  transition-all
+                  duration-500
+                  ${
+                    !isInRange
+                      ? "opacity-[0.15] cursor-default"
+                      : isSelected
+                      ? "ring-2 ring-red-600 z-10 scale-100 md:scale-105 bg-white/15 shadow-xl shadow-red-900/20"
+                      : "hover:bg-white/10 bg-white/5"
+                  }`}
               >
                 {camp && isInRange && (
-                  <div className={`absolute inset-0 ${camp.color} opacity-40 rounded-xl`}></div>
+                  <div
+                    className={`absolute inset-0 ${camp.color} opacity-40 rounded-xl`}
+                  />
                 )}
-                
-                <span className={`relative text-sm md:text-lg font-medium ${
-                  isSunday ? 'text-red-500' : 
-                  isSaturday ? 'text-purple-400' : 
-                  'text-white'
-                } ${isSelected ? 'font-black scale-110' : ''}`}>
-                  {date.getDate()}
-                </span>
 
-                {count > 0 && isInRange && (
-                  <div className="relative mt-1 flex gap-0.5 justify-center flex-wrap px-1">
-                     <div className="w-1 h-1 bg-red-500 rounded-full animate-pulse"></div>
-                     {count > 1 && <div className="w-1 h-1 bg-red-500 rounded-full"></div>}
+                {/* 내용 */}
+                <div
+                  className="
+                    absolute inset-0
+                    flex flex-col
+                    items-center
+                    justify-between
+                    py-[10%]
+                    pointer-events-none
+                  "
+                >
+                  {/* 월 */}
+                  <div className="h-[18%] flex items-center justify-center">
+                    {showMonth ? (
+                      <span
+                        className="
+                          text-[6px]
+                          sm:text-[8px]
+                          md:text-[11px]
+                          font-bold
+                          text-gray-300
+                          leading-none
+                          whitespace-nowrap
+                        "
+                      >
+                        {date.getMonth() + 1}월
+                      </span>
+                    ) : (
+                      <span />
+                    )}
                   </div>
-                )}
-                {count > 0 && isInRange && (
-                  <span className="relative text-[8px] md:text-[10px] text-gray-400 font-bold mt-0.5">{count}명</span>
-                )}
+
+                  {/* 날짜 */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <span
+                      className={`
+                        leading-none
+                        text-[13px]
+                        sm:text-[20px]
+                        md:text-[32px]
+                        ${
+                          isSunday
+                            ? "text-red-500"
+                            : isSaturday
+                            ? "text-purple-400"
+                            : "text-white"
+                        }
+                        ${isSelected ? "font-black scale-110" : "font-medium"}
+                      `}
+                    >
+                      {date.getDate()}
+                    </span>
+                  </div>
+
+                  {/* 명수 */}
+                  <div className="h-[18%] flex items-center justify-center">
+                    {count > 0 && isInRange ? (
+                      <span
+                        className="
+                          px-1.5
+                          py-[1px]
+                          rounded-full
+                          bg-red-500/15
+                          border-red-400/20
+
+                          text-[5.5px]
+                          sm:text-[7px]
+                          md:text-[9px]
+
+                          text-red-200
+                          font-black
+                          leading-none
+                          whitespace-nowrap
+
+                          backdrop-blur-sm
+                          shadow-sm
+                        "
+                      >
+                        {count}명
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                  </div>
+                </div>
               </button>
             );
           })}
@@ -244,11 +357,11 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           )}
         </div>
 
-        <button 
+        <button
           onClick={() => setShowForm(true)}
           className="bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-red-900/40 transform transition-all active:scale-[0.97] flex items-center justify-center gap-3 text-lg mt-2 group"
         >
-          <i className="fa-solid fa-fire-pulse group-hover:animate-bounce"></i>
+          <i className="fa-solid fa-user-plus group-hover:animate-bounce"></i>
           참여하기
         </button>
 

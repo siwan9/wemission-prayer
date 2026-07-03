@@ -51,8 +51,12 @@ const CampTab: React.FC<CampTabProps> = ({
                     캠프 제목
                   </label>
 
-                  <input
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                  <textarea
+                    rows={2}
+                    className="w-full rounded-xl border border-gray-300 px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="예시)
+                THE
+                AWAKENING"
                     value={editingSettingData.campTitle}
                     onChange={e =>
                       setEditingSettingData({
@@ -194,134 +198,184 @@ const CampTab: React.FC<CampTabProps> = ({
             </div>
 
             {/* 캠프 일정 */}
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
+<div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
 
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">
-                  캠프 일정
-                </h2>
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-xl font-bold">
+      캠프 일정
+    </h2>
 
-                <button
-                  disabled={requesting}
-                  className={`rounded-xl px-5 py-2 transition ${
-                      requesting
-                          ? "bg-gray-400 cursor-not-allowed text-white"
-                          : "bg-black hover:bg-gray-800 text-white"
-                  }`}
-                  onClick={async () => {
+    <button
+      disabled={requesting}
+      className={`rounded-xl px-5 py-2 transition ${
+        requesting
+          ? "bg-gray-400 cursor-not-allowed text-white"
+          : "bg-black hover:bg-gray-800 text-white"
+      }`}
+      onClick={async () => {
+        if (requesting) return;
+
+        try {
+          setRequesting(true);
+
+          const today = new Date().toISOString().slice(0, 10);
+
+          await onCreateCampDate({
+            startDate: today,
+            endDate: today,
+          });
+        } finally {
+          setRequesting(false);
+        }
+      }}
+    >
+      + 일정 추가
+    </button>
+  </div>
+
+  <div className="space-y-4">
+
+    {editingCampdates.map(camp => {
+
+      const isLast = camp.sortOrder === editingCampdates.length;
+
+      return (
+        <div
+          key={camp.id}
+          className="
+            rounded-2xl
+            border
+            border-gray-200
+            p-5
+            hover:bg-gray-50
+            transition
+          "
+        >
+          <div className="flex flex-col gap-5">
+
+            {/* 차수 */}
+            <div className="text-2xl font-bold">
+              {camp.sortOrder}차 캠프
+            </div>
+
+            {/* 날짜 입력 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {/* 시작 날짜 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-500">
+                  시작 날짜
+                </label>
+
+                <input
+                  type="date"
+                  className="
+                    w-full
+                    h-12
+                    rounded-xl
+                    border
+                    border-gray-300
+                    px-4
+                    text-base
+                    font-medium
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-black
+                  "
+                  value={camp.startDate}
+                  onChange={async e => {
                     if (requesting) return;
 
                     try {
                       setRequesting(true);
 
-                      const today = new Date().toISOString().slice(0, 10);
-
-                      await onCreateCampDate({
-                          startDate: today,
-                          endDate: today,
+                      await onUpdateCampDate({
+                        id: camp.id,
+                        startDate: e.target.value,
+                        endDate: camp.endDate,
+                        sortOrder: camp.sortOrder,
                       });
                     } finally {
-                        setRequesting(false);
+                      setRequesting(false);
                     }
                   }}
+                />
+              </div>
+
+              {/* 종료 날짜 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-500">
+                  종료 날짜
+                </label>
+
+                <input
+                  type="date"
+                  className="
+                    w-full
+                    h-12
+                    rounded-xl
+                    border
+                    border-gray-300
+                    px-4
+                    text-base
+                    font-medium
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-black
+                  "
+                  value={camp.endDate}
+                  onChange={async e => {
+                    if (requesting) return;
+
+                    try {
+                      setRequesting(true);
+
+                      await onUpdateCampDate({
+                        id: camp.id,
+                        startDate: camp.startDate,
+                        endDate: e.target.value,
+                        sortOrder: camp.sortOrder,
+                      });
+                    } finally {
+                      setRequesting(false);
+                    }
+                  }}
+                />
+              </div>
+
+            </div>
+
+            {/* 삭제 버튼 */}
+            {isLast && (
+              <button
+                disabled={requesting}
+                className={`w-full h-12 rounded-xl font-bold transition ${
+                  requesting
+                    ? "bg-gray-400 cursor-not-allowed text-white"
+                    : "bg-red-500 hover:bg-red-600 text-white"
+                }`}
+                onClick={async () => {
+                  if (requesting) return;
+
+                  try {
+                    setRequesting(true);
+                    await onDeleteCampDate(camp.id);
+                  } finally {
+                    setRequesting(false);
+                  }
+                }}
               >
-                  + 일정 추가
+                삭제
               </button>
-              </div>
+            )}
 
-              <div className="space-y-3">
+          </div>
+        </div>
+      );
 
-                {editingCampdates.map(camp => {
+    })}
+  </div>
 
-                  const isLast = camp.sortOrder === editingCampdates.length;
-
-                  return (
-                    <div
-                      key={camp.id}
-                      className="flex items-center gap-4 rounded-2xl border border-gray-200 px-5 py-4 hover:bg-gray-50 transition"
-                    >
-
-                      <div className="w-16 text-center font-bold text-lg">
-                        {camp.sortOrder}차
-                      </div>
-
-                      <input
-                        type="date"
-                        className="rounded-xl border border-gray-300 px-3 py-2"
-                        value={camp.startDate}
-                        onChange={async e => {
-                          if (requesting) return;
-
-                          try {
-                              setRequesting(true);
-
-                              await onUpdateCampDate({
-                                  id: camp.id,
-                                  startDate: e.target.value,
-                                  endDate: camp.endDate,
-                                  sortOrder: camp.sortOrder,
-                              });
-                          } finally {
-                              setRequesting(false);
-                          }
-                        }}
-                      />
-
-                      <span className="text-gray-400 font-semibold">~</span>
-
-                      <input
-                        type="date"
-                        className="rounded-xl border border-gray-300 px-3 py-2"
-                        value={camp.endDate}
-                        onChange={async e => {
-                          if (requesting) return;
-
-                          try {
-                              setRequesting(true);
-
-                              await onUpdateCampDate({
-                                  id: camp.id,
-                                  startDate: camp.startDate,
-                                  endDate: e.target.value,
-                                  sortOrder: camp.sortOrder,
-                              });
-                          } finally {
-                              setRequesting(false);
-                          }
-                        }}
-                      />
-
-                      <div className="ml-auto">
-                        {isLast && (
-                          <button
-                            disabled={requesting}
-                            className={`px-5 py-2 rounded-xl font-semibold transition ${
-                                requesting
-                                    ? "bg-gray-400 cursor-not-allowed text-white"
-                                    : "bg-red-500 hover:bg-red-600 text-white"
-                            }`}
-                            onClick={async () => {
-                                if (requesting) return;
-
-                                try {
-                                    setRequesting(true);
-                                    await onDeleteCampDate(camp.id);
-                                } finally {
-                                    setRequesting(false);
-                                }
-                            }}
-                          >
-                            삭제
-                          </button>
-                        )}
-                    </div>
-
-                    </div>
-                  );
-
-                })}
-
-              </div>
             </div>
 
           </div>
