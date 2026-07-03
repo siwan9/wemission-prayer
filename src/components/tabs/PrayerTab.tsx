@@ -380,8 +380,9 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           settingData={settingData}
           onClose={() => setShowForm(false)} 
           onSubmit={async (data) => {
-            onRegister(data);
+            await onRegister(data);
             setShowForm(false);
+            alert("기도 참여가 성공적으로 등록되었습니다!\n달력에서 확인해보세요.");
           }}
           initialDate={selectedDate || undefined}
         />
