@@ -76,19 +76,18 @@ const App: React.FC = () => {
 
 
 
-  const loadRegistrations = async () => {
+  const loadRegistrations = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
 
       const data = await getRegistrations();
-
       setRegistrations(data);
-
-    } catch (e) {
-      console.error("조회 실패:", e);
-      throw e;
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
   const loadCampDates = async () => {
@@ -146,16 +145,8 @@ const App: React.FC = () => {
   };
 
   const handleAddRegistration = async (reg: Omit<PrayerRegistration, 'id'>) => {
-    try {
-      await createRegistration(reg);
-      await loadRegistrations();
-
-      alert("기도 참여가 성공적으로 등록되었습니다! 달력에서 확인해보세요.");
-    } catch (e) {
-      console.error("등록 실패:", e);
-      alert("데이터베이스 연결을 확인해주세요.");
-      throw e;
-    }
+    await createRegistration(reg);
+    await loadRegistrations();
   };
 
   const handleUserUpdateRegistration = async (updated: PrayerRegistrationUpdateDto) => {
