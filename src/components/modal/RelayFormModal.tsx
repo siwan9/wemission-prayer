@@ -111,8 +111,13 @@ const RelayFormModal = ({
         <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-6 md:p-10 shadow-2xl flex flex-col max-h-[90vh]">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-white">금식기도 신청</h2>
-              <p className="text-xs text-gray-500 mt-1">하나님 앞에서 기도로 준비합니다</p>
+              <h2 className="text-2xl font-bold text-white">
+                금식기도 신청
+              </h2>
+
+              <p className="mt-2 text-xs text-gray-500">
+                하나님 앞에서 기도로 준비합니다.
+              </p>
             </div>
             <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
               <i className="fa-solid fa-xmark text-lg"></i>

@@ -282,7 +282,7 @@ const App: React.FC = () => {
       await loadLinks();
   };
 
-  if (!settingData) {
+  if (!settingData || loading) {
     return (
         <div className="flex-1 flex items-center justify-center">
             <LoadingView />
@@ -393,34 +393,64 @@ const App: React.FC = () => {
             backdrop-blur-sm
           "
         >
-          <TabButton active={activeTab === 'PRAYER'} onClick={() => setActiveTab('PRAYER')} label="금식기도 참여" />
-          <TabButton active={activeTab === 'GUIDE'} onClick={() => setActiveTab('GUIDE')} label="기도제목·안내" />
-          <TabButton active={activeTab === 'MORE'} onClick={() => setActiveTab('MORE')} label="더 알아보기" />
+          <TabButton active={activeTab === 'PRAYER'} onClick={() => setActiveTab('PRAYER')} label="금식기도" />
+          <TabButton active={activeTab === 'GUIDE'} onClick={() => setActiveTab('GUIDE')} label="위미션 소개" />
+          <TabButton active={activeTab === 'MORE'} onClick={() => setActiveTab('MORE')} label="더보기" />
         </nav>
 
-        {loading ? <LoadingView /> : (
-          <main className="flex-1 w-full relative">
-            <div className={`transition-all duration-700 ease-out transform ${activeTab === 'PRAYER' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'}`}>
-            <PrayerTab 
-              registrations={registrations} 
-              settingData = {settingData} 
+        <main className="flex-1 w-full relative">
+          <div
+            className={`transition-all duration-700 ease-out transform ${
+              activeTab === 'PRAYER'
+                ? 'opacity-100 translate-y-0 relative'
+                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
+            }`}
+          >
+            <PrayerTab
+              registrations={registrations}
+              settingData={settingData}
               campDates={campDates}
               onRegister={handleAddRegistration}
               onVerifyPin={handleVerifyUserPin}
-              onUpdate={handleUserUpdateRegistration} 
-              onDelete={handleUserDeleteRegistration}/>
+              onUpdate={handleUserUpdateRegistration}
+              onDelete={handleUserDeleteRegistration}
+            />
           </div>
-          <div className={`transition-all duration-700 ease-out transform ${activeTab === 'GUIDE' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'}`}>
+
+          <div
+            className={`transition-all duration-700 ease-out transform ${
+              activeTab === 'GUIDE'
+                ? 'opacity-100 translate-y-0 relative'
+                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
+            }`}
+          >
             <GuideTab data={settingData} />
           </div>
-          <div className={`transition-all duration-700 ease-out transform ${activeTab === 'MORE' ? 'opacity-100 translate-y-0 relative' : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'}`}>
-            <MoreTab linksData={linkData}/>
-          </div>
-          </main>
-        )}
 
-        <Footer linksData={linkData} onPhoneClick={handlePhoneClick} />
-        {showAdminAuth && <AdminAuthModal onSuccess={handleAdminSuccess} onClose={() => setShowAdminAuth(false)} onVerifyPin={handleVerifyAdminPin}/>}
+          <div
+            className={`transition-all duration-700 ease-out transform ${
+              activeTab === 'MORE'
+                ? 'opacity-100 translate-y-0 relative'
+                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
+            }`}
+          >
+            <MoreTab linksData={linkData} />
+          </div>
+        </main>
+
+        <footer className="mt-auto pt-16 pb-4">
+          <Footer
+            linksData={linkData}
+            onPhoneClick={handlePhoneClick}
+          />
+        </footer>
+        {showAdminAuth && (
+          <AdminAuthModal
+            onSuccess={handleAdminSuccess}
+            onClose={() => setShowAdminAuth(false)}
+            onVerifyPin={handleVerifyAdminPin}
+          />
+        )}
       </div>
     </div>
     </div>

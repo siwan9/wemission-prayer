@@ -37,7 +37,7 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/15 backdrop-blur-sm transition-all duration-200">
       <div className="bg-white rounded-3xl p-8 w-full max-w-xs space-y-6">
         <div className="text-center">
           <i className="fa-solid fa-lock text-gray-400 text-3xl mb-4"></i>
