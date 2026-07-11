@@ -78,11 +78,25 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
       curr.setDate(curr.getDate() + 1);
     }
     return days;
-  }, []);
+  }, [settingData.serviceEndDate, settingData.serviceStartDate]);
 
-  const getRegistrationsForDate = (date: string) => {
-    return registrations.filter(r => r.dates.includes(date));
-  };
+  const registrationsByDate = useMemo(() => {
+    const byDate = new Map<string, PrayerRegistrationReadDto[]>();
+
+    registrations.forEach(registration => {
+      registration.dates.forEach(date => {
+        const dailyRegistrations = byDate.get(date);
+
+        if (dailyRegistrations) {
+          dailyRegistrations.push(registration);
+        } else {
+          byDate.set(date, [registration]);
+        }
+      });
+    });
+
+    return byDate;
+  }, [registrations]);
 
   const handleUpdate = async (data: PrayerFormData) => {
     if (!editingPrayer) return;
@@ -123,11 +137,41 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
     };
   };
 
+  const calendarCells = useMemo(() => calendarDays.map((dateStr, index) => {
+    const date = parseLocalDate(dateStr);
+    const campIndex = campDates.findIndex(
+      camp => dateStr >= camp.startDate && dateStr <= camp.endDate
+    );
+    const previousDate = index > 0 ? parseLocalDate(calendarDays[index - 1]) : null;
+
+    return {
+      date,
+      dateStr,
+      count: registrationsByDate.get(dateStr)?.length ?? 0,
+      camp: campIndex === -1 ? null : {
+        ...campDates[campIndex],
+        color: CAMP_COLORS[campIndex % CAMP_COLORS.length],
+      },
+      isInRange: dateStr >= settingData.serviceStartDate && dateStr <= settingData.serviceEndDate,
+      isSunday: date.getDay() === 0,
+      isSaturday: date.getDay() === 6,
+      showMonth: dateStr === settingData.serviceStartDate ||
+        Boolean(previousDate && previousDate.getMonth() !== date.getMonth()),
+    };
+  }), [calendarDays, campDates, registrationsByDate, settingData.serviceEndDate, settingData.serviceStartDate]);
+
+  const selectedRegistrations = useMemo(
+    () => selectedDate ? registrationsByDate.get(selectedDate) ?? [] : [],
+    [registrationsByDate, selectedDate]
+  );
+  const selectedCamp = selectedDate ? getCampInfo(selectedDate) : null;
+  const shouldScrollParticipants = selectedRegistrations.length >= 10;
+
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto items-start px-1 animate-fadeIn">
-      <div className="lg:col-span-8 bg-white/5 rounded-[2rem] p-4 md:p-8 border border-white/10 shadow-2xl backdrop-blur-sm">
+      <div className="lg:col-span-8 bg-white/5 rounded-[2rem] p-4 md:p-8 border border-white/10 shadow-2xl [contain:layout_paint]">
         <div className="grid grid-cols-7 mb-4">
           {weekDays.map(day => (
             <div key={day} className={`text-center text-[10px] md:text-xs font-bold py-2 ${day === '일' ? 'text-red-500' : day === '토' ? 'text-purple-400' : 'text-gray-400'}`}>
@@ -136,21 +180,8 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-          {calendarDays.map((dateStr, index) => {
-            const date = parseLocalDate(dateStr);
+          {calendarCells.map(({ dateStr, date, count, camp, isInRange, isSunday, isSaturday, showMonth }) => {
             const isSelected = selectedDate === dateStr;
-            const dailyRegs = getRegistrationsForDate(dateStr);
-            const count = dailyRegs.length;
-            const camp = getCampInfo(dateStr);
-            const isInRange = dateStr >= settingData.serviceStartDate && dateStr <= settingData.serviceEndDate;
-            
-            const isSunday = date.getDay() === 0;
-            const isSaturday = date.getDay() === 6;
-
-            const prevDate = index > 0 ? parseLocalDate(calendarDays[index - 1]) : null;
-            const showMonth =
-              dateStr === settingData.serviceStartDate ||
-              (prevDate && prevDate.getMonth() !== date.getMonth());
 
             return (
               <button
@@ -162,8 +193,8 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
                   sm:aspect-square
                   rounded-xl
                   overflow-hidden
-                  transition-all
-                  duration-500
+                  transition-[background-color,box-shadow,transform]
+                  duration-200
                   ${
                     !isInRange
                       ? "opacity-[0.15] cursor-default"
@@ -252,7 +283,6 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
                           leading-none
                           whitespace-nowrap
 
-                          backdrop-blur-sm
                           shadow-sm
                         "
                       >
@@ -299,24 +329,24 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Relay Prayer</span>
-                    {getCampInfo(selectedDate) && (
-                      <span className="text-[10px] font-bold text-purple-400">• {getCampInfo(selectedDate)?.sortOrder}차 캠프</span>
+                    {selectedCamp && (
+                      <span className="text-[10px] font-bold text-purple-400">• {selectedCamp.sortOrder}차 캠프</span>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-2xl font-black text-white">{getRegistrationsForDate(selectedDate).length}</span>
+                  <span className="text-2xl font-black text-white">{selectedRegistrations.length}</span>
                   <span className="text-[8px] text-gray-500 font-bold uppercase">Participants</span>
                 </div>
               </div>
               
-              <div className="space-y-3">
-                {getRegistrationsForDate(selectedDate).length === 0 ? (
+              <div className={`space-y-3 ${shouldScrollParticipants ? 'max-h-[680px] overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable]' : ''}`}>
+                {selectedRegistrations.length === 0 ? (
                   <div className="text-xs text-gray-600 text-center py-20 border-2 border-dashed border-white/5 rounded-2xl italic">
                     이날의 기도자가 되어주세요
                   </div>
                 ) : (
-                  getRegistrationsForDate(selectedDate).map(reg => (
+                  selectedRegistrations.map(reg => (
                     <div key={reg.id} className="bg-white/5 rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-all duration-300">
                       <button 
                         onClick={() => setExpandedId(expandedId === reg.id ? null : reg.id)}
