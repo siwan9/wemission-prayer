@@ -331,33 +331,27 @@ const App: React.FC = () => {
   return (
     <div
       className="
-        relative
+        relative isolate
         min-h-screen
-        overflow-hidden
+        overflow-x-clip
         bg-black
         text-white
       "
     >
-      {/* Grass Background */}
+      {/* 스크롤 중 모바일 뷰포트가 변해도 빈틈이 생기지 않는 고정 배경 */}
       <div
         className="
-          fixed inset-0 z-0
-          bg-cover
-          bg-center
-          bg-no-repeat
+          pointer-events-none fixed inset-x-0 top-0 z-0 h-[100lvh]
+          [backface-visibility:hidden] [transform:translateZ(0)]
         "
-        style={{
-          backgroundImage: "url('/images/background.png')",
-        }}
-      />
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/images/background.png')" }}
+        />
+      </div>
 
-      {/* 배경 어둡게 덮기 */}
-      <div className="fixed inset-0 -z-10 bg-black/35" />
-
-      {/* 포스터 느낌 그라데이션 */}
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(255,155,215,0.22),transparent_35%),linear-gradient(to_bottom,rgba(0,0,0,0.1),rgba(0,0,0,0.65))]" />
-
-      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 lg:px-8 py-6">
         <div
           className="
             relative
