@@ -67,12 +67,13 @@ const App: React.FC = () => {
     if (!settingData) return false;
 
     const today = new Date();
+    const todayString = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-');
 
-    return (
-      false
-      // today < new Date(settingData.serviceStartDate) ||
-      // today > new Date(settingData.serviceEndDate)
-    );
+    return todayString > settingData.serviceEndDate;
   }, [settingData]);
 
 
@@ -361,7 +362,7 @@ const App: React.FC = () => {
             bg-black/45
             backdrop-blur-md
             rounded-[40px]
-            border border-yellow-300/20
+            border border-pink-300/20
             shadow-[0_25px_80px_rgba(0,0,0,0.45)]
           "
         >
@@ -372,10 +373,10 @@ const App: React.FC = () => {
             grid grid-cols-3 gap-2
             mt-6 mb-8
             rounded-2xl
-            border border-yellow-300/70
+            border border-pink-300/70
             bg-black/85
             p-2
-            shadow-[0_0_24px_rgba(250,204,21,0.35)]
+            shadow-[0_0_24px_rgba(255,130,210,0.35)]
             backdrop-blur-sm
           "
         >
@@ -458,18 +459,18 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, label }) => (
       ${
         active
           ? `
-            bg-yellow-300
+            bg-pink-300
             text-black
-            border-yellow-200
-            shadow-[0_0_18px_rgba(250,204,21,0.75)]
+            border-pink-200
+            shadow-[0_0_18px_rgba(255,130,210,0.75)]
             scale-[1.02]
           `
           : `
             bg-black/70
             text-white
             border-white/15
-            hover:border-yellow-300/70
-            hover:text-yellow-200
+            hover:border-pink-300/70
+            hover:text-pink-200
           `
       }
     `}
