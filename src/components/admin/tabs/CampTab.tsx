@@ -36,6 +36,60 @@ const CampTab: React.FC<CampTabProps> = ({
     editingSettingData, setEditingSettingData, editingCampdates, onSaveSettingData, onCreateCampDate, onUpdateCampDate, onDeleteCampDate
 }) => {
     const [requesting, setRequesting] = useState(false);
+    const [campDateDrafts, setCampDateDrafts] = useState<
+        Record<string, { startDate: string; endDate: string }>
+    >({});
+
+    const updateCampDateDraft = (
+        camp: CampDate,
+        field: "startDate" | "endDate",
+        value: string
+    ) => {
+        setCampDateDrafts(current => ({
+            ...current,
+            [camp.id]: {
+                startDate: current[camp.id]?.startDate ?? camp.startDate,
+                endDate: current[camp.id]?.endDate ?? camp.endDate,
+                [field]: value,
+            },
+        }));
+    };
+
+    const saveCampDateDraft = async (camp: CampDate) => {
+        if (requesting) return;
+
+        const draft = campDateDrafts[camp.id];
+
+        if (!draft?.startDate || !draft.endDate) {
+            setCampDateDrafts(current => ({
+                ...current,
+                [camp.id]: {
+                    startDate: camp.startDate,
+                    endDate: camp.endDate,
+                },
+            }));
+            return;
+        }
+
+        if (
+            draft.startDate === camp.startDate &&
+            draft.endDate === camp.endDate
+        ) {
+            return;
+        }
+
+        try {
+            setRequesting(true);
+            await onUpdateCampDate({
+                id: camp.id,
+                startDate: draft.startDate,
+                endDate: draft.endDate,
+                sortOrder: camp.sortOrder,
+            });
+        } finally {
+            setRequesting(false);
+        }
+    };
 
     return (
         <div className="space-y-8">
@@ -238,6 +292,10 @@ const CampTab: React.FC<CampTabProps> = ({
     {editingCampdates.map(camp => {
 
       const isLast = camp.sortOrder === editingCampdates.length;
+      const dateDraft = campDateDrafts[camp.id] ?? {
+        startDate: camp.startDate,
+        endDate: camp.endDate,
+      };
 
       return (
         <div
@@ -282,23 +340,11 @@ const CampTab: React.FC<CampTabProps> = ({
                     focus:ring-2
                     focus:ring-black
                   "
-                  value={camp.startDate}
-                  onChange={async e => {
-                    if (requesting) return;
-
-                    try {
-                      setRequesting(true);
-
-                      await onUpdateCampDate({
-                        id: camp.id,
-                        startDate: e.target.value,
-                        endDate: camp.endDate,
-                        sortOrder: camp.sortOrder,
-                      });
-                    } finally {
-                      setRequesting(false);
-                    }
-                  }}
+                  value={dateDraft.startDate}
+                  onChange={e =>
+                    updateCampDateDraft(camp, "startDate", e.target.value)
+                  }
+                  onBlur={() => saveCampDateDraft(camp)}
                 />
               </div>
 
@@ -323,23 +369,11 @@ const CampTab: React.FC<CampTabProps> = ({
                     focus:ring-2
                     focus:ring-black
                   "
-                  value={camp.endDate}
-                  onChange={async e => {
-                    if (requesting) return;
-
-                    try {
-                      setRequesting(true);
-
-                      await onUpdateCampDate({
-                        id: camp.id,
-                        startDate: camp.startDate,
-                        endDate: e.target.value,
-                        sortOrder: camp.sortOrder,
-                      });
-                    } finally {
-                      setRequesting(false);
-                    }
-                  }}
+                  value={dateDraft.endDate}
+                  onChange={e =>
+                    updateCampDateDraft(camp, "endDate", e.target.value)
+                  }
+                  onBlur={() => saveCampDateDraft(camp)}
                 />
               </div>
 

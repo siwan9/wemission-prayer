@@ -1,12 +1,12 @@
 @font-face {
-  font-family: 'DungGeunMo';
-  src: url('/fonts/DungGeunMo.woff2') format('woff2');
+  font-family: 'JejuGothicOTF';
+  src: url('/fonts/JejuGothicOTF.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 .font-pixel {
-  font-family: 'DungGeunMo', sans-serif;
+  font-family: 'JejuGothicOTF', sans-serif;
 }
 
 .custom-scrollbar {
