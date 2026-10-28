@@ -69,8 +69,9 @@ const App: React.FC = () => {
     const today = new Date();
 
     return (
-      today < new Date(settingData.serviceStartDate) ||
-      today > new Date(settingData.serviceEndDate)
+      false
+      // today < new Date(settingData.serviceStartDate) ||
+      // today > new Date(settingData.serviceEndDate)
     );
   }, [settingData]);
 
@@ -290,7 +291,7 @@ const App: React.FC = () => {
           <div className="space-y-4">
             <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase">Service Completed</h1>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">
-              2026 여름 위미션 캠프 릴레이 금식기도가<br/>
+              {settingData.campYear} {settingData.campSeason} 위미션 캠프 릴레이 금식기도가<br/>
               성령님의 은혜 속에 모두 마무리되었습니다.<br/>
               함께 기도로 동참해주신 모든 분들께 감사드립니다.
             </p>
@@ -347,7 +348,7 @@ const App: React.FC = () => {
       >
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/background.png')" }}
+          style={{ backgroundImage: "url('/images/2027-winter.png')" }}
         />
       </div>
 
@@ -360,7 +361,7 @@ const App: React.FC = () => {
             bg-black/45
             backdrop-blur-md
             rounded-[40px]
-            border border-pink-300/20
+            border border-yellow-300/20
             shadow-[0_25px_80px_rgba(0,0,0,0.45)]
           "
         >
@@ -371,10 +372,10 @@ const App: React.FC = () => {
             grid grid-cols-3 gap-2
             mt-6 mb-8
             rounded-2xl
-            border border-pink-300/70
+            border border-yellow-300/70
             bg-black/85
             p-2
-            shadow-[0_0_24px_rgba(255,130,210,0.35)]
+            shadow-[0_0_24px_rgba(250,204,21,0.35)]
             backdrop-blur-sm
           "
         >
@@ -426,6 +427,7 @@ const App: React.FC = () => {
         <footer className="mt-auto pt-16 pb-4">
           <Footer
             linksData={linkData}
+            campYear={settingData.campYear}
             onPhoneClick={handlePhoneClick}
           />
         </footer>
@@ -456,18 +458,18 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, label }) => (
       ${
         active
           ? `
-            bg-pink-300
+            bg-yellow-300
             text-black
-            border-pink-200
-            shadow-[0_0_18px_rgba(255,130,210,0.75)]
+            border-yellow-200
+            shadow-[0_0_18px_rgba(250,204,21,0.75)]
             scale-[1.02]
           `
           : `
             bg-black/70
             text-white
             border-white/15
-            hover:border-pink-300/70
-            hover:text-pink-200
+            hover:border-yellow-300/70
+            hover:text-yellow-200
           `
       }
     `}

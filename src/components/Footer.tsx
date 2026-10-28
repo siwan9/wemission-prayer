@@ -4,10 +4,13 @@ import type { LinksData } from '../types';
 
 interface FooterProps {
   linksData: LinksData;
+  campYear: number;
   onPhoneClick: () => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ linksData, onPhoneClick }) => {
+const Footer: React.FC<FooterProps> = ({ linksData, campYear, onPhoneClick }) => {
+  const copyrightYear = campYear > 2026 ? `2026–${campYear}` : String(campYear);
+
   return (
     <footer className="mt-12 py-8 flex flex-col items-center border-t border-white/15 space-y-4">
     <a
@@ -27,7 +30,7 @@ const Footer: React.FC<FooterProps> = ({ linksData, onPhoneClick }) => {
     </button>
 
     <div className="text-[11px] text-gray-400">
-      © 2026 WEMISSION. All rights reserved.
+      © {copyrightYear} WEMISSION. All rights reserved.
     </div>
   </footer>
   );

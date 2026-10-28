@@ -2,18 +2,24 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    # 3일마다 실행 (UTC 00:00)
-    - cron: '0 0 */3 * *'
+    # 하루 3회 실행, 정각 혼잡을 피하기 위해 17분에 실행 (UTC)
+    - cron: '17 1,9,17 * * *'
   workflow_dispatch:
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
 
     steps:
       - name: Keep Supabase Alive
         run: |
           curl --fail --silent --show-error \
+            --retry 5 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --connect-timeout 15 \
+            --max-time 30 \
             "${{ secrets.SUPABASE_URL }}/rest/v1/heartbeat?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"

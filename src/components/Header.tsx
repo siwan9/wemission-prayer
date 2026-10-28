@@ -112,12 +112,7 @@ const Header: React.FC<HeaderProps> = ({ settingData }) => {
           }}
           className="block font-pixel tracking-[-0.03em]"
           style={{
-            color: "#f9a8d4",
-            textShadow: `
-              2px 2px 0 #f472b6,
-              4px 4px 0 #db2777,
-              6px 6px 0 #7e22ce
-            `,
+            color: "#fde047",
           }}
         >
           {line}
@@ -130,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({ settingData }) => {
         mt-6
         uppercase
         tracking-[0.45em]
-        text-pink-300
+        text-yellow-300
         font-black
         text-xl
 
@@ -141,14 +136,14 @@ const Header: React.FC<HeaderProps> = ({ settingData }) => {
       {season} CAMP
     </p>
 
-    <div className="mt-10 w-32 h-[2px] bg-pink-300/70" />
+    <div className="mt-10 w-32 h-[2px] bg-yellow-300/70" />
 
     <span className="
         mt-8
         text-sm
         tracking-[0.4em]
         uppercase
-        text-pink-300
+        text-yellow-300
         font-medium
       ">
         DAYS OF PRAYER
