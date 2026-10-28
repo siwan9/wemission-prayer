@@ -1,32 +1,45 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import type { PrayerRegistration, EditStep, PrayerRegistrationReadDto } from '../../../types';
 import SearchView from './SearchView';
 import PinVerifyView from './PinVerifyView';
+import { searchCurrentRegistrations } from '../../../services/RegistrationService';
 
 interface EditPrayerModalProps {
-    registrations: PrayerRegistrationReadDto[];
     onClose: () => void;
     onVerifyPin: (id: string, pin: string) => Promise<PrayerRegistration | null>;
     onEdit: (prayer: PrayerRegistration) => void;
 }
 
 const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
-    registrations, onClose, onVerifyPin, onEdit}) => {
+    onClose, onVerifyPin, onEdit}) => {
     const [editStep, setEditStep] = useState<EditStep>("SEARCH");
     const [keyword, setKeyword] = useState("");
+    const [searchResults, setSearchResults] = useState<PrayerRegistrationReadDto[]>([]);
+    const [hasSearched, setHasSearched] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [selectedPrayer, setSelectedPrayer] = useState<PrayerRegistrationReadDto | null>(null);
 
-    const filteredRegistrations = useMemo(() => {
+    const handleSearch = async () => {
         const search = keyword.trim().toLowerCase();
 
-        if (!search) return [];
+        if (!search) {
+            alert("이름 또는 교회명을 입력해주세요.");
+            return;
+        }
 
-        return registrations.filter(r =>
-            r.name.toLowerCase().includes(search) ||
-            r.churchName.toLowerCase().includes(search)
-        );
-    }, [keyword, registrations]);
+        setLoading(true);
+        try {
+            setSearchResults(await searchCurrentRegistrations(search));
+            setHasSearched(true);
+            setSelectedPrayer(null);
+        } catch (error) {
+            console.error(error);
+            alert('기도 기록을 검색하지 못했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleClose = () => {
         setSelectedPrayer(null);
@@ -42,8 +55,16 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
                 return (
                     <SearchView
                         keyword={keyword}
-                        setKeyword={setKeyword}
-                        registrations={filteredRegistrations}
+                        onKeywordChange={(value) => {
+                            setKeyword(value);
+                            setHasSearched(false);
+                            setSearchResults([]);
+                            setSelectedPrayer(null);
+                        }}
+                        onSearch={() => void handleSearch()}
+                        hasSearched={hasSearched}
+                        loading={loading}
+                        registrations={searchResults}
                         onSelect={(prayer)=>{
                             setSelectedPrayer(prayer);
                             setEditStep("PIN");

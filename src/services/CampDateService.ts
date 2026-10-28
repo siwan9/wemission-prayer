@@ -1,15 +1,22 @@
 import { supabase } from "../lib/supabase";
 import type { CampDate, CampDateCreateDto, CampDateUpdateDto } from "../types";
 
+interface CampDateRow {
+  id: string;
+  start_date: string;
+  end_date: string;
+  sort_order: number;
+}
+
 export async function getCampDates(): Promise<CampDate[]> {
   const { data, error } = await supabase
     .from("camp_dates")
-    .select("*")
+    .select("id,start_date,end_date,sort_order")
     .order("sort_order");
 
   if (error) throw error;
 
-  return data.map(c => ({
+  return (data ?? []).map((c: CampDateRow) => ({
     id: c.id,
 
     startDate: c.start_date,

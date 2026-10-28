@@ -43,7 +43,7 @@ const GuideTab: React.FC<GuideTabProps> = ({ data }) => {
 
       <div className="text-center py-4">
         <p className="text-xs text-gray-400 italic leading-relaxed">
-          "{data.bibleContent}"<br/>
+          <span className="whitespace-pre-wrap">"{data.bibleContent}"</span><br/>
           ({data.bibleTitle})
         </p>
       </div>

@@ -46,7 +46,46 @@ export interface PrayerRegistrationReadDto {
   createdAt?: string;
 }
 
+export interface ArchivedRegistrationCandidate {
+  id: string;
+  name: string;
+  churchName: string;
+  dates: string[];
+  campId: string;
+  campaignCode: string;
+  campaignYear: number;
+  campaignSeason: "여름" | "겨울";
+}
+
+export interface ArchivedRegistrationDetail extends ArchivedRegistrationCandidate {
+  role: Role;
+  prayerRequest: string;
+}
+
+export interface PrayerCampaign {
+  id: string;
+  year: number;
+  season: "여름" | "겨울";
+  registrationCount: number;
+}
+
+export interface AdminRegistrationPage {
+  items: PrayerRegistration[];
+  total: number;
+}
+
+export interface PrayerDateCount {
+  date: string;
+  count: number;
+}
+
+export interface CampaignCreateDto {
+  year: number;
+  season: "여름" | "겨울";
+}
+
 export interface SettingDataReadDto {
+  currentCampId: string;
   campYear: number;
   campSeason: "여름" | "겨울";
   campTitle: string;
@@ -62,6 +101,7 @@ export interface SettingDataReadDto {
 }
 
 export interface SettingDataUpdateDto {
+  currentCampId: string;
   campYear: number;
   campSeason: "여름" | "겨울";
   campTitle: string;
@@ -120,9 +160,9 @@ export type HomeTabType = 'PRAYER' | 'GUIDE' | 'MORE';
 export type EditStep = 'SEARCH' | 'PIN' ;
 
 export type AdminTabType =
+  | "CAMPAIGNS"
   | "CONTENT"
   | "CAMP"
-  | "CALENDAR"
   | "REGS"
   | "ADMIN"
   | "LINKS"
