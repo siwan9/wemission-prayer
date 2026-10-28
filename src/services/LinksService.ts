@@ -4,7 +4,7 @@ import type { LinksData } from "../types";
 export async function getLinks(): Promise<LinksData> {
   const { data, error } = await supabase
     .from("links")
-    .select("*")
+    .select("song_list_url,song_sheet_url,camp_intro_url,instagram_url,youtube_url,donation_url,homepage_url")
     .single();
 
   if (error) throw error;

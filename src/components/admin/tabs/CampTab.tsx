@@ -129,14 +129,9 @@ const CampTab: React.FC<CampTabProps> = ({
 
                     <input
                       type="number"
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+                      disabled
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500"
                       value={editingSettingData.campYear}
-                      onChange={e =>
-                        setEditingSettingData({
-                          ...editingSettingData,
-                          campYear: Number(e.target.value),
-                        })
-                      }
                     />
                   </div>
 
@@ -147,13 +142,14 @@ const CampTab: React.FC<CampTabProps> = ({
 
                     <div className="relative">
                       <select
+                          disabled
                           className="
                               w-full
                               appearance-none
                               rounded-xl
                               border
                               border-gray-300
-                              bg-white
+                              bg-gray-100
                               px-4
                               py-3
                               pr-12
@@ -162,12 +158,6 @@ const CampTab: React.FC<CampTabProps> = ({
                               focus:ring-black
                           "
                           value={editingSettingData.campSeason}
-                          onChange={e =>
-                              setEditingSettingData({
-                                  ...editingSettingData,
-                                  campSeason: e.target.value as "여름" | "겨울",
-                              })
-                          }
                       >
                           <option value="여름">여름</option>
                           <option value="겨울">겨울</option>
@@ -191,6 +181,10 @@ const CampTab: React.FC<CampTabProps> = ({
                   </div>
 
                 </div>
+
+                <p className="text-xs text-gray-500">
+                  연도와 계절은 캠프 운영 탭에서 새 캠프를 시작할 때 지정합니다.
+                </p>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">

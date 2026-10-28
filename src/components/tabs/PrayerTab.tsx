@@ -1,13 +1,15 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Roles } from '../../types';
 import { CAMP_COLORS } from '../../constants';
 import type { PrayerRegistration, SettingDataReadDto, PrayerRegistrationReadDto, PrayerFormData, PrayerRegistrationUpdateDto, CampDate } from '../../types';
+import { formatDate, getCalendarDaysForMonth, getMonthKey, getMonthTitle, parseLocalDate, shiftMonth } from '../../utils/calendar';
 import RelayFormModal from '../modal/RelayFormModal';
 import EditPrayerModal from '../modal/edit/EditPrayerModal'
+import PastPrayerModal from '../modal/PastPrayerModal';
+import { getPrayerMonthCounts, getPrayersByDate } from '../../services/RegistrationService';
 
 interface PrayerTabProps {
-  registrations: PrayerRegistrationReadDto[];
   settingData: SettingDataReadDto;
   campDates: CampDate[];
   onRegister: (reg: Omit<PrayerRegistration, 'id'>) => Promise<void>;
@@ -22,19 +24,16 @@ interface PrayerTabProps {
 }
 
 const PrayerTab: React.FC<PrayerTabProps> = ({ 
-  registrations, settingData, campDates, onRegister, onVerifyPin, onUpdate, onDelete }) => {
-  
+  settingData, campDates, onRegister, onVerifyPin, onUpdate, onDelete }) => {
+
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPastPrayerModal, setShowPastPrayerModal] = useState(false);
   const [editingPrayer, setEditingPrayer] = useState<PrayerRegistration | null>(null);
-  
-  const formatDate = (date: Date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0")}`;
-  };
+  const [dateCounts, setDateCounts] = useState<Map<string, number>>(new Map());
+  const [selectedRegistrations, setSelectedRegistrations] = useState<PrayerRegistrationReadDto[]>([]);
+
   const getTodayString = () => formatDate(new Date());
 
   const getInitialSelectedDate = () => {
@@ -50,53 +49,67 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
     return settingData.serviceStartDate;
   };
   const [selectedDate, setSelectedDate] = useState<string | null>(getInitialSelectedDate());
+  const [visibleMonth, setVisibleMonth] = useState(() => getMonthKey(getInitialSelectedDate()));
+  const firstMonth = getMonthKey(settingData.serviceStartDate);
+  const lastMonth = getMonthKey(settingData.serviceEndDate);
 
+  const calendarDays = useMemo(
+    () => getCalendarDaysForMonth(visibleMonth),
+    [visibleMonth],
+  );
 
-  const parseLocalDate = (dateStr: string) => {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    return new Date(year, month - 1, day);
+  const moveMonth = (amount: number) => {
+    const nextMonth = shiftMonth(visibleMonth, amount);
+    if (nextMonth < firstMonth || nextMonth > lastMonth) return;
+    setVisibleMonth(nextMonth);
   };
-  
-  const calendarDays = useMemo(() => {
-    const days = [];
-    const start = parseLocalDate(settingData.serviceStartDate);
-    const end = parseLocalDate(settingData.serviceEndDate);
-    
-    const firstDay = new Date(start);
-    while (firstDay.getDay() !== 0) {
-      firstDay.setDate(firstDay.getDate() - 1);
+
+  const getMonthRange = (month: string) => {
+    const [year, monthNumber] = month.split('-').map(Number);
+    const lastDay = new Date(year, monthNumber, 0).getDate();
+    return {
+      start: `${month}-01`,
+      end: `${month}-${String(lastDay).padStart(2, '0')}`,
+    };
+  };
+
+  const loadMonthCounts = async () => {
+    const range = getMonthRange(visibleMonth);
+    const counts = await getPrayerMonthCounts(range.start, range.end);
+    setDateCounts(new Map(counts.map(item => [item.date, item.count])));
+  };
+
+  const loadSelectedDate = async () => {
+    if (!selectedDate) {
+      setSelectedRegistrations([]);
+      return;
     }
+    setSelectedRegistrations(await getPrayersByDate(selectedDate));
+  };
 
-    const lastDay = new Date(end);
-    while (lastDay.getDay() !== 6) {
-      lastDay.setDate(lastDay.getDate() + 1);
-    }
-
-    const curr = new Date(firstDay);
-    while (curr <= lastDay) {
-      days.push(formatDate(curr));
-      curr.setDate(curr.getDate() + 1);
-    }
-    return days;
-  }, [settingData.serviceEndDate, settingData.serviceStartDate]);
-
-  const registrationsByDate = useMemo(() => {
-    const byDate = new Map<string, PrayerRegistrationReadDto[]>();
-
-    registrations.forEach(registration => {
-      registration.dates.forEach(date => {
-        const dailyRegistrations = byDate.get(date);
-
-        if (dailyRegistrations) {
-          dailyRegistrations.push(registration);
-        } else {
-          byDate.set(date, [registration]);
-        }
-      });
+  useEffect(() => {
+    let cancelled = false;
+    const range = getMonthRange(visibleMonth);
+    void getPrayerMonthCounts(range.start, range.end).then(counts => {
+      if (!cancelled) setDateCounts(new Map(counts.map(item => [item.date, item.count])));
     });
+    return () => { cancelled = true; };
+  }, [visibleMonth, settingData.currentCampId]);
 
-    return byDate;
-  }, [registrations]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!selectedDate) {
+      return;
+    }
+    void getPrayersByDate(selectedDate).then(items => {
+      if (!cancelled) setSelectedRegistrations(items);
+    });
+    return () => { cancelled = true; };
+  }, [selectedDate, settingData.currentCampId]);
+
+  const refreshPrayerData = async () => {
+    await Promise.all([loadMonthCounts(), loadSelectedDate()]);
+  };
 
   const handleUpdate = async (data: PrayerFormData) => {
     if (!editingPrayer) return;
@@ -112,6 +125,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
         prayerRequest: data.prayerRequest,
         dates: data.dates,
     });
+    await refreshPrayerData();
     
     setEditingPrayer(null);
   };
@@ -120,6 +134,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
       if (!editingPrayer) return;
 
       await onDelete(id, editingPrayer.pin);
+      await refreshPrayerData();
 
       setEditingPrayer(null);
   };
@@ -137,33 +152,26 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
     };
   };
 
-  const calendarCells = useMemo(() => calendarDays.map((dateStr, index) => {
+  const calendarCells = useMemo(() => calendarDays.map((dateStr) => {
     const date = parseLocalDate(dateStr);
     const campIndex = campDates.findIndex(
       camp => dateStr >= camp.startDate && dateStr <= camp.endDate
     );
-    const previousDate = index > 0 ? parseLocalDate(calendarDays[index - 1]) : null;
+    const isCurrentMonth = getMonthKey(dateStr) === visibleMonth;
 
     return {
       date,
       dateStr,
-      count: registrationsByDate.get(dateStr)?.length ?? 0,
+      count: dateCounts.get(dateStr) ?? 0,
       camp: campIndex === -1 ? null : {
         ...campDates[campIndex],
         color: CAMP_COLORS[campIndex % CAMP_COLORS.length],
       },
-      isInRange: dateStr >= settingData.serviceStartDate && dateStr <= settingData.serviceEndDate,
+      isInRange: isCurrentMonth && dateStr >= settingData.serviceStartDate && dateStr <= settingData.serviceEndDate,
       isSunday: date.getDay() === 0,
       isSaturday: date.getDay() === 6,
-      showMonth: dateStr === settingData.serviceStartDate ||
-        Boolean(previousDate && previousDate.getMonth() !== date.getMonth()),
     };
-  }), [calendarDays, campDates, registrationsByDate, settingData.serviceEndDate, settingData.serviceStartDate]);
-
-  const selectedRegistrations = useMemo(
-    () => selectedDate ? registrationsByDate.get(selectedDate) ?? [] : [],
-    [registrationsByDate, selectedDate]
-  );
+  }), [calendarDays, campDates, dateCounts, settingData.serviceEndDate, settingData.serviceStartDate, visibleMonth]);
   const selectedCamp = selectedDate ? getCampInfo(selectedDate) : null;
   const shouldScrollParticipants = selectedRegistrations.length >= 10;
 
@@ -172,6 +180,29 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto items-start px-1 animate-fadeIn">
       <div className="lg:col-span-8 bg-white/5 rounded-[2rem] p-4 md:p-8 border border-white/10 shadow-2xl [contain:layout_paint]">
+        <div className="mb-3 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => moveMonth(-1)}
+            disabled={visibleMonth <= firstMonth}
+            aria-label="이전 달"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10 disabled:cursor-default disabled:opacity-20"
+          >
+            <i className="fa-solid fa-chevron-left" />
+          </button>
+          <h3 className="text-lg font-black text-white md:text-xl">
+            {getMonthTitle(visibleMonth)}
+          </h3>
+          <button
+            type="button"
+            onClick={() => moveMonth(1)}
+            disabled={visibleMonth >= lastMonth}
+            aria-label="다음 달"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10 disabled:cursor-default disabled:opacity-20"
+          >
+            <i className="fa-solid fa-chevron-right" />
+          </button>
+        </div>
         <div className="grid grid-cols-7 mb-4">
           {weekDays.map(day => (
             <div key={day} className={`text-center text-[10px] md:text-xs font-bold py-2 ${day === '일' ? 'text-red-500' : day === '토' ? 'text-purple-400' : 'text-gray-400'}`}>
@@ -180,7 +211,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-          {calendarCells.map(({ dateStr, date, count, camp, isInRange, isSunday, isSaturday, showMonth }) => {
+          {calendarCells.map(({ dateStr, date, count, camp, isInRange, isSunday, isSaturday }) => {
             const isSelected = selectedDate === dateStr;
 
             return (
@@ -220,26 +251,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
                     pointer-events-none
                   "
                 >
-                  {/* 월 */}
-                  <div className="h-[18%] flex items-center justify-center">
-                    {showMonth ? (
-                      <span
-                        className="
-                          text-[6px]
-                          sm:text-[8px]
-                          md:text-[11px]
-                          font-bold
-                          text-gray-300
-                          leading-none
-                          whitespace-nowrap
-                        "
-                      >
-                        {date.getMonth() + 1}월
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
+                  <div className="h-[18%]" />
 
                   {/* 날짜 */}
                   <div className="flex-1 flex items-center justify-center">
@@ -297,15 +309,15 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
             );
           })}
         </div>
-        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 justify-center border-t border-white/5 pt-6">
+        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 justify-center border-t border-white/15 pt-6">
            {campDates.map((camp, index) => (
               <div key={camp.id} className="flex items-center gap-2">
                 <div
-                  className={`w-2.5 h-2.5 rounded-full ${
+                  className={`w-3 h-3 rounded-full ${
                     CAMP_COLORS[index % CAMP_COLORS.length]
-                  } border border-white/20`}
+                  } border border-white/50 shadow-sm`}
                 />
-                <span className="text-[10px] text-gray-500 font-medium">
+                <span className="text-xs text-gray-200 font-bold">
                   {camp.sortOrder}차 캠프
                 </span>
               </div>
@@ -403,14 +415,24 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           신청 수정하기
         </button>
 
+        <button
+          onClick={() => setShowPastPrayerModal(true)}
+          className="flex items-center justify-center gap-3 rounded-[2rem] border border-white/15 bg-black/60 py-4 font-bold text-gray-200 transition hover:border-yellow-300/50 hover:text-yellow-200 active:scale-[0.97]"
+        >
+          <i className="fa-solid fa-box-archive" />
+          지난 캠프 기도 기록 보기
+        </button>
+
       </div>
 
       {showForm && (
         <RelayFormModal 
           settingData={settingData}
+          campDates={campDates}
           onClose={() => setShowForm(false)} 
           onSubmit={async (data) => {
             await onRegister(data);
+            await refreshPrayerData();
             setShowForm(false);
             alert("기도 참여가 성공적으로 등록되었습니다!\n달력에서 확인해보세요.");
           }}
@@ -419,7 +441,6 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
       )}
       {showEditModal && (
         <EditPrayerModal
-          registrations={registrations}
           onVerifyPin={onVerifyPin}
           onClose={() => setShowEditModal(false)}
           onEdit={(prayer) => {
@@ -431,6 +452,7 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
       {editingPrayer && (
           <RelayFormModal
               settingData={settingData}
+              campDates={campDates}
               initialData={editingPrayer}
               onSubmit={handleUpdate}
               onDelete={async () => {
@@ -439,6 +461,9 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
               }}
               onClose={() => setEditingPrayer(null)}
           />
+      )}
+      {showPastPrayerModal && (
+        <PastPrayerModal onClose={() => setShowPastPrayerModal(false)} />
       )}
     </div>
   );

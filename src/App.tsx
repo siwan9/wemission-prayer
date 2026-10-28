@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { HomeTabType, PrayerRegistrationReadDto, PrayerRegistration, SettingDataReadDto, PrayerRegistrationUpdateDto, SettingDataUpdateDto, CampDate, CampDateCreateDto, CampDateUpdateDto, LinksData} from './types';
+import type { HomeTabType, PrayerRegistration, SettingDataReadDto, PrayerRegistrationUpdateDto, SettingDataUpdateDto, CampDate, CampDateCreateDto, CampDateUpdateDto, LinksData} from './types';
 import { LINKS } from './constants';
 import '../App.css';
 import Header from './components/Header';
@@ -11,8 +11,8 @@ import GuideTab from './components/tabs/GuideTab.tsx';
 import MoreTab from './components/tabs/MoreTab.tsx';
 import SettingsView from './components/admin/SettingsView';
 import AdminAuthModal from './components/admin/AdminAuthModal';
+import PastPrayerModal from './components/modal/PastPrayerModal';
 import {
-    getRegistrations,
     createRegistration,
     updateRegistration,
     deleteRegistration,
@@ -37,9 +37,9 @@ import {
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<HomeTabType>('PRAYER');
-  const [registrations, setRegistrations] = useState<PrayerRegistrationReadDto[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
+  const [showPastPrayerModal, setShowPastPrayerModal] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [settingData, setSettingData] = useState<SettingDataReadDto | null>(null);
@@ -48,20 +48,21 @@ const App: React.FC = () => {
   const [adminPin, setAdminPin] = useState<string | null>(null);
 
   useEffect(() => {
-    init();
+    let cancelled = false;
+    const initialize = async () => {
+      try {
+        const settings = await getSetting();
+        if (!cancelled) setSettingData(settings);
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) alert("설정을 불러오지 못했습니다.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void initialize();
+    return () => { cancelled = true; };
   }, []);
-  const init = async () => {
-    try {
-      const settings = await getSetting();
-      setSettingData(settings);
-    } catch (err) {
-      console.error(err);
-      alert("설정을 불러오지 못했습니다.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
   // 서비스 종료 여부 판단
   const isServiceExpired = useMemo(() => {
     if (!settingData) return false;
@@ -78,20 +79,6 @@ const App: React.FC = () => {
 
 
 
-  const loadRegistrations = async (showLoading = true) => {
-    try {
-      if (showLoading) {
-        setLoading(true);
-      }
-
-      const data = await getRegistrations();
-      setRegistrations(data);
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
-  };
   const loadCampDates = async () => {
     try {
       const data = await getCampDates();
@@ -118,13 +105,21 @@ const App: React.FC = () => {
   // 기도 신청 내역 조회
   useEffect(() => {
     if (isServiceExpired && !showSettings) {
-      setLoading(false);
       return;
     }
 
-    loadCampDates();
-    loadRegistrations();
-    loadLinks();
+    let cancelled = false;
+    void Promise.all([getCampDates(), getLinks()])
+      .then(([dates, links]) => {
+        if (cancelled) return;
+        setCampDates(dates);
+        setLinkData(links);
+      })
+      .catch(error => {
+        console.error(error);
+        if (!cancelled) alert("운영 정보를 불러오지 못했습니다.");
+      });
+    return () => { cancelled = true; };
   }, [isServiceExpired, showSettings]);
 
 
@@ -148,13 +143,11 @@ const App: React.FC = () => {
 
   const handleAddRegistration = async (reg: Omit<PrayerRegistration, 'id'>) => {
     await createRegistration(reg);
-    await loadRegistrations();
   };
 
   const handleUserUpdateRegistration = async (updated: PrayerRegistrationUpdateDto) => {
     try {
       await updateRegistration(updated);
-      await loadRegistrations();
       alert("수정되었습니다.");
     } catch (err) {
       console.error(err);
@@ -163,25 +156,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAdminUpdateRegistration = async (updated: PrayerRegistrationUpdateDto) => {
-    try {
-      await updateRegistration(updated);
-    } catch (e) {
-      console.error("수정 실패:", e);
-      throw e;
-    }
-  };
-
   const handleUserDeleteRegistration = async (id: string, pin: string) => {
-    try {
-      await deleteRegistration(id, pin);
-      await loadRegistrations();
-    } catch (e) {
-      console.error("삭제 실패:", e);
-      throw e;
-    }
-  };
-  const handleAdminDeleteRegistration = async (id: string, pin: string) => {
     try {
       await deleteRegistration(id, pin);
     } catch (e) {
@@ -275,6 +250,13 @@ const App: React.FC = () => {
       await loadLinks();
   };
 
+  const handleCampaignStarted = async () => {
+    const settings = await getSetting();
+    setSettingData(settings);
+    await Promise.all([loadCampDates(), loadLinks()]);
+    alert("새 캠프가 시작되었습니다. 캠프 정보와 일정을 수정해주세요.");
+  };
+
   if (!settingData || loading) {
     return (
         <div className="flex-1 flex items-center justify-center">
@@ -302,12 +284,19 @@ const App: React.FC = () => {
         <div className="flex flex-col items-center gap-6">
           <div className="h-px w-12 bg-red-600/30"></div>
           <a href={linkData.homepageUrl} className="text-xs text-red-500 font-bold tracking-widest hover:text-white transition-colors uppercase">wemission.com</a>
+          <button
+            onClick={() => setShowPastPrayerModal(true)}
+            className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-xs font-bold text-gray-300 hover:border-yellow-300/40 hover:text-yellow-200"
+          >
+            지난 캠프 기도 기록 보기
+          </button>
           <button onClick={() => setShowAdminAuth(true)} className="mt-10 text-[10px] text-gray-700 hover:text-gray-500 transition-colors flex items-center gap-2">
             <i className="fa-solid fa-lock"></i> 기록 확인 (관리자 전용)
           </button>
         </div>
         {showAdminAuth && <AdminAuthModal 
           onSuccess={handleAdminSuccess} onClose={() => setShowAdminAuth(false)} onVerifyPin={handleVerifyAdminPin}/>}
+        {showPastPrayerModal && <PastPrayerModal onClose={() => setShowPastPrayerModal(false)} />}
       </div>
     );
   }
@@ -315,17 +304,17 @@ const App: React.FC = () => {
   if (showSettings) {
     return (
       <SettingsView 
+        key={settingData.currentCampId}
         settingData={settingData}
         adminPin={adminPin}
         campDates={campDates}
         linksData={linkData}
         onSaveSettingData={handleUpdateSettingData}
-        onUpdateRegistration={handleAdminUpdateRegistration}
-        onDeleteRegistration={handleAdminDeleteRegistration}
         onCreateCampDate={handleCreateCampDate}
         onUpdateCampDate={handleUpdateCampDate}
         onDeleteCampDate={handleDeleteCampDate}
         onUpdateLinksData={handleUpdateLinksData}
+        onCampaignStarted={handleCampaignStarted}
         onClose={() => setShowSettings(false)}
       />
     );
@@ -349,7 +338,9 @@ const App: React.FC = () => {
       >
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/2027-winter.png')" }}
+          style={{
+            backgroundImage: `url('/images/${settingData.campYear}-${settingData.campSeason === '여름' ? 'summer' : 'winter'}.png')`,
+          }}
         />
       </div>
 
@@ -362,7 +353,7 @@ const App: React.FC = () => {
             bg-black/45
             backdrop-blur-md
             rounded-[40px]
-            border border-pink-300/20
+            border border-yellow-300/20
             shadow-[0_25px_80px_rgba(0,0,0,0.45)]
           "
         >
@@ -373,10 +364,10 @@ const App: React.FC = () => {
             grid grid-cols-3 gap-2
             mt-6 mb-8
             rounded-2xl
-            border border-pink-300/70
+            border border-yellow-300/70
             bg-black/85
             p-2
-            shadow-[0_0_24px_rgba(255,130,210,0.35)]
+            shadow-[0_0_24px_rgba(250,204,21,0.35)]
             backdrop-blur-sm
           "
         >
@@ -394,7 +385,6 @@ const App: React.FC = () => {
             }`}
           >
             <PrayerTab
-              registrations={registrations}
               settingData={settingData}
               campDates={campDates}
               onRegister={handleAddRegistration}
@@ -459,18 +449,18 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, label }) => (
       ${
         active
           ? `
-            bg-pink-300
+            bg-yellow-300
             text-black
-            border-pink-200
-            shadow-[0_0_18px_rgba(255,130,210,0.75)]
+            border-yellow-200
+            shadow-[0_0_18px_rgba(250,204,21,0.75)]
             scale-[1.02]
           `
           : `
             bg-black/70
             text-white
             border-white/15
-            hover:border-pink-300/70
-            hover:text-pink-200
+            hover:border-yellow-300/70
+            hover:text-yellow-200
           `
       }
     `}

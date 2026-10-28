@@ -1,7 +1,5 @@
 import type { LinksData, SettingDataReadDto } from "./types";
 
-export const ADMIN_PASSWORD = '1199';
-
 export const LINKS: LinksData = {
   songListUrl: 'https://youtube.com/playlist?list=PLKixBkYt0ZrOD76h64bH_CDNj56oHAyUg&si=5Bf_6kdogM51Atse',
   songSheetUrl: 'https://www.dropbox.com/scl/fo/9ys48effnul4m1ifhgj32/AI0f2RAjT4CBBlznzpc2t9s?rlkey=f0vgeg8piejanrhh57i43sfot&st=8wxq9jla&dl=0',
@@ -22,6 +20,7 @@ export const CAMP_COLORS = [
 ];
 
 export const INITIAL_SETTING_DATA: SettingDataReadDto = {
+  currentCampId: '',
   campYear: 2026,
   campSeason: '여름',
   campTitle: 'GOD',

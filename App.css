@@ -9,6 +9,59 @@
   font-family: 'JejuGothicOTF', sans-serif;
 }
 
+.prayer-form-field {
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  caret-color: white;
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.prayer-form-field:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.prayer-form-field:focus,
+.prayer-form-field:active {
+  background-color: rgba(127, 29, 29, 0.3);
+  border-color: rgba(248, 113, 113, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.85);
+  outline: none;
+}
+
+.prayer-form-field:-webkit-autofill,
+.prayer-form-field:-webkit-autofill:hover {
+  -webkit-text-fill-color: white;
+  caret-color: white;
+  -webkit-box-shadow: 0 0 0 1000px rgb(10, 10, 10) inset;
+}
+
+.prayer-form-field:-webkit-autofill:focus,
+.prayer-form-field:-webkit-autofill:active {
+  -webkit-text-fill-color: white;
+  caret-color: white;
+  -webkit-box-shadow: 0 0 0 1000px rgb(48, 12, 15) inset;
+}
+
+.admin-input {
+  width: 100%;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.75rem 1rem;
+  color: rgb(17 24 39);
+}
+
+.admin-input:focus {
+  border-color: black;
+  outline: none;
+  box-shadow: 0 0 0 1px black;
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
