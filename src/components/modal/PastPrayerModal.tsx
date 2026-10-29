@@ -62,35 +62,41 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-md">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl md:p-8">
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-white">지난 캠프 기도 기록</h2>
-            <p className="mt-2 text-xs text-gray-400">본인의 이름 또는 교회명으로 검색한 후 PIN을 확인해주세요.</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-md sm:p-3">
+      <div className="max-h-[calc(100dvh-1rem)] w-full max-w-xl overflow-y-auto rounded-3xl border border-white/10 bg-[#0a0a0a] p-4 shadow-2xl sm:max-h-[90vh] sm:rounded-[2rem] sm:p-6 md:p-8">
+        <div className="-mx-4 mb-4 flex items-start justify-between gap-3 border-b border-white/10 px-4 pb-4 sm:-mx-6 sm:mb-6 sm:px-6 sm:pb-6 md:-mx-8 md:px-8">
+          <div className="min-w-0">
+            <h2 className="text-xl font-black text-white sm:text-2xl">지난 캠프 기도 기록</h2>
+            <p className="mt-2 text-xs leading-relaxed text-gray-400">본인의 이름 또는 교회명으로 검색한 후 PIN을 확인해주세요.</p>
           </div>
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white">
+          <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white" aria-label="지난 캠프 기도 기록 창 닫기">
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
 
         {!detail && (
           <>
-            <div className="flex gap-2">
-              <input
-                value={keyword}
-                onChange={e => {
-                  setKeyword(e.target.value);
-                  setHasSearched(false);
-                  setResults([]);
-                  setSelected(null);
-                }}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                className="prayer-form-field min-w-0 flex-1 rounded-xl px-4 py-3"
-                placeholder="이름 또는 교회명"
-              />
-              <button onClick={handleSearch} disabled={loading} className="rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50">
-                검색
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+              <div className="relative min-w-0 flex-1">
+                <i
+                  className="fa-solid fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  aria-hidden="true"
+                />
+                <input
+                  value={keyword}
+                  onChange={e => {
+                    setKeyword(e.target.value);
+                    setHasSearched(false);
+                    setResults([]);
+                    setSelected(null);
+                  }}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                  className="prayer-form-field w-full rounded-xl py-3 pl-12 pr-4"
+                  placeholder="이름 또는 교회명"
+                />
+              </div>
+              <button onClick={handleSearch} disabled={loading} className="min-h-12 w-full shrink-0 rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50 sm:w-auto">
+                {loading ? '검색 중' : '검색'}
               </button>
             </div>
 
@@ -127,7 +133,7 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
             {selected && (
               <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
                 <label className="mb-2 block text-xs font-bold text-gray-400">신청 당시 6자리 PIN</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
                   <input
                     type="password"
                     inputMode="numeric"
@@ -136,7 +142,7 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
                     onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
                     className="prayer-form-field min-w-0 flex-1 rounded-xl px-4 py-3 text-center tracking-[0.4em]"
                   />
-                  <button onClick={handleVerify} disabled={loading} className="rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50">확인</button>
+                  <button onClick={handleVerify} disabled={loading} className="min-h-12 w-full shrink-0 rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50 sm:w-auto">{loading ? '확인 중' : '확인'}</button>
                 </div>
               </div>
             )}

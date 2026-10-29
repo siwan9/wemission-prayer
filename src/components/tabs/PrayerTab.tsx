@@ -399,29 +399,31 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
           )}
         </div>
 
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-red-900/40 transform transition-all active:scale-[0.97] flex items-center justify-center gap-3 text-lg mt-2 group"
-        >
-          <i className="fa-solid fa-user-plus group-hover:animate-bounce"></i>
-          참여하기
-        </button>
+        <div className="mt-2 flex flex-col gap-3">
+          <button
+            onClick={() => setShowForm(true)}
+            className="group flex h-16 w-full items-center justify-center gap-3 rounded-[2rem] bg-red-600 px-5 text-base font-black text-white shadow-2xl shadow-red-900/40 transition-all hover:bg-red-700 active:scale-[0.97]"
+          >
+            <i className="fa-solid fa-user-plus w-5 text-center group-hover:animate-bounce" aria-hidden="true" />
+            참여하기
+          </button>
 
-        <button
-          onClick={() => setShowEditModal(true)}
-          className="bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-red-900/40 transform transition-all active:scale-[0.97] flex items-center justify-center gap-3 text-lg mt-2 group"
-        >
-          <i className="fa-solid fa-pen-to-square group-hover:animate-bounce"></i>
-          신청 수정하기
-        </button>
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="group flex h-16 w-full items-center justify-center gap-3 rounded-[2rem] bg-red-600 px-5 text-base font-black text-white shadow-2xl shadow-red-900/40 transition-all hover:bg-red-700 active:scale-[0.97]"
+          >
+            <i className="fa-solid fa-pen-to-square w-5 text-center group-hover:animate-bounce" aria-hidden="true" />
+            신청 수정하기
+          </button>
 
-        <button
-          onClick={() => setShowPastPrayerModal(true)}
-          className="flex items-center justify-center gap-3 rounded-[2rem] border border-white/15 bg-black/60 py-4 font-bold text-gray-200 transition hover:border-yellow-300/50 hover:text-yellow-200 active:scale-[0.97]"
-        >
-          <i className="fa-solid fa-box-archive" />
-          지난 캠프 기도 기록 보기
-        </button>
+          <button
+            onClick={() => setShowPastPrayerModal(true)}
+            className="flex h-16 w-full items-center justify-center gap-3 rounded-[2rem] border border-white/15 bg-black/60 px-5 text-base font-black text-gray-200 transition-all hover:border-yellow-300/50 hover:text-yellow-200 active:scale-[0.97]"
+          >
+            <i className="fa-solid fa-box-archive w-5 text-center" aria-hidden="true" />
+            지난 캠프 기도 기록 보기
+          </button>
+        </div>
 
       </div>
 

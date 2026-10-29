@@ -103,22 +103,23 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-2 backdrop-blur-md sm:p-4">
 
             <div className="bg-[#0a0a0a]
                 border border-white/10
-                rounded-[2rem]
+                rounded-3xl sm:rounded-[2rem]
                 shadow-2xl
                 w-full
                 max-w-2xl
-                max-h-[90vh]
+                max-h-[calc(100dvh-1rem)] sm:max-h-[90vh]
                 overflow-hidden
+                flex flex-col
                 animate-fadeIn">
 
-                <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-8 sm:py-6">
 
-                    <div>
-                        <h2 className="text-2xl font-bold text-white">
+                    <div className="min-w-0">
+                        <h2 className="text-xl font-bold text-white sm:text-2xl">
                             신청 내역 수정
                         </h2>
 
@@ -129,14 +130,15 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
 
                     <button
                         onClick={handleClose}
-                        className="w-10 h-10 rounded-full hover:bg-white/5"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-white/5"
+                        aria-label="신청 내역 수정 창 닫기"
                     >
                         <i className="fa-solid fa-xmark text-xl text-gray-400"/>
                     </button>
 
                 </div>
 
-                <div className="p-6 overflow-y-auto max-h-[75vh]">
+                <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
                     {renderContent()}
                 </div>
 
