@@ -13,13 +13,22 @@ jobs:
 
     steps:
       - name: Keep Supabase Alive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          curl --fail --silent --show-error \
+          set -eu
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "SUPABASE_URL and SUPABASE_ANON_KEY secrets must be configured." >&2
+            exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error \
             --retry 5 \
-            --retry-all-errors \
             --retry-delay 10 \
             --connect-timeout 15 \
             --max-time 30 \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/heartbeat?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+            "${SUPABASE_URL%/}/rest/v1/settings?select=current_camp_id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY"
