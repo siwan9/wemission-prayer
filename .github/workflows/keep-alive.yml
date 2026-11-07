@@ -29,6 +29,6 @@ jobs:
             --retry-delay 10 \
             --connect-timeout 15 \
             --max-time 30 \
-            "${SUPABASE_URL%/}/rest/v1/settings?select=current_camp_id&limit=1" \
+            "${SUPABASE_URL%/}/settings?select=current_camp_id&limit=1" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY"
