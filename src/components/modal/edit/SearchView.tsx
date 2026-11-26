@@ -18,7 +18,7 @@ export default function SearchView({
   return (
     <>
     <form
-        className="mb-6 flex flex-col gap-3 sm:flex-row sm:gap-2"
+        className="flex items-center gap-2"
         onSubmit={(event) => {
             event.preventDefault();
             onSearch();
@@ -30,13 +30,12 @@ export default function SearchView({
             <input
                 value={keyword}
                 onChange={(e) => onKeywordChange(e.target.value)}
-                placeholder="이름 또는 교회명을 입력하세요"
+                placeholder="이름 또는 교회명"
                 className="
-                    w-full
-                    rounded-xl sm:rounded-2xl
+                    h-12 w-full
+                    rounded-xl
                     bg-white/5
                     border border-white/10
-                    py-3.5 sm:py-4
                     pl-12
                     pr-4
                     text-white
@@ -51,7 +50,7 @@ export default function SearchView({
         <button
             type="submit"
             disabled={loading}
-            className="min-h-12 w-full shrink-0 rounded-xl bg-red-600 px-5 font-bold text-white transition hover:bg-red-500 disabled:opacity-50 sm:w-auto sm:rounded-2xl"
+            className="h-12 w-20 shrink-0 rounded-xl bg-red-600 text-sm font-bold text-white transition hover:bg-red-500 disabled:opacity-50"
         >
             {loading ? '검색 중' : '검색'}
         </button>

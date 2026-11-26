@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Roles } from '../../types';
 import { CAMP_COLORS } from '../../constants';
 import type { Role, PrayerRegistration, PrayerRegistrationReadDto, PrayerFormData, SettingDataReadDto, CampDate } from '../../types';
@@ -40,6 +41,12 @@ const RelayFormModal = ({
   const [visibleMonth, setVisibleMonth] = useState(() =>
     getMonthKey(initialData?.dates[0] ?? initialDate ?? settingData.serviceStartDate),
   );
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
 
   const calendarDays = useMemo(
     () => getCalendarDaysForMonth(visibleMonth),
@@ -96,9 +103,9 @@ const RelayFormModal = ({
         setSubmitting(false);
     }
   };
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/20 backdrop-blur-md animate-fadeIn">
-        <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-4 md:p-10 shadow-2xl flex flex-col max-h-[90vh]">
+    return createPortal(
+      <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-2 md:p-4 bg-black/20 backdrop-blur-md animate-fadeIn">
+        <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-[2rem] sm:rounded-[2.5rem] p-4 md:p-10 shadow-2xl flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
           <div className="flex justify-between items-center mb-8 mt-2 ml-2">
             <div>
               <h2 className="text-2xl font-bold text-white">
@@ -318,7 +325,7 @@ const RelayFormModal = ({
                 <button
                     type="submit"
                     disabled={submitting}
-                    className={`${onDelete ? "flex-1" : "w-full"} bg-gradient-to-r from-red-600 to-purple-700 hover:from-red-500 hover:to-purple-600 text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-[0.98] text-lg uppercase tracking-widest disabled:opacity-50`}
+                    className={`${onDelete ? "flex-1" : "w-full"} bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-red-900/40 transition-all active:scale-[0.98] text-lg uppercase tracking-widest disabled:opacity-50`}
                 >
                     {submitting
                         ? "등록 중..."
@@ -329,7 +336,8 @@ const RelayFormModal = ({
             </div>
             </form>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 

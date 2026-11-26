@@ -348,8 +348,8 @@ const App: React.FC = () => {
         <div
           className="
             relative
-            flex min-h-screen flex-col
-            px-6 lg:px-8 pb-20
+            flex min-h-[calc(100svh-3rem)] flex-col
+            px-6 lg:px-8 pb-6
             bg-black/45
             backdrop-blur-md
             rounded-[40px]
@@ -378,11 +378,7 @@ const App: React.FC = () => {
 
         <main className="flex-1 w-full relative">
           <div
-            className={`transition-all duration-700 ease-out transform ${
-              activeTab === 'PRAYER'
-                ? 'opacity-100 translate-y-0 relative'
-                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
-            }`}
+            className={activeTab === 'PRAYER' ? 'relative animate-fadeIn' : 'hidden'}
           >
             <PrayerTab
               settingData={settingData}
@@ -395,21 +391,13 @@ const App: React.FC = () => {
           </div>
 
           <div
-            className={`transition-all duration-700 ease-out transform ${
-              activeTab === 'GUIDE'
-                ? 'opacity-100 translate-y-0 relative'
-                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
-            }`}
+            className={activeTab === 'GUIDE' ? 'relative animate-fadeIn' : 'hidden'}
           >
             <GuideTab data={settingData} />
           </div>
 
           <div
-            className={`transition-all duration-700 ease-out transform ${
-              activeTab === 'MORE'
-                ? 'opacity-100 translate-y-0 relative'
-                : 'opacity-0 translate-y-12 absolute inset-0 pointer-events-none'
-            }`}
+            className={activeTab === 'MORE' ? 'relative animate-fadeIn' : 'hidden'}
           >
             <MoreTab linksData={linkData} />
           </div>

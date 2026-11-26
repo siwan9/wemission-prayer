@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { PrayerRegistration, EditStep, PrayerRegistrationReadDto } from '../../../types';
 import SearchView from './SearchView';
 import PinVerifyView from './PinVerifyView';
@@ -19,6 +20,12 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
     const [hasSearched, setHasSearched] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedPrayer, setSelectedPrayer] = useState<PrayerRegistrationReadDto | null>(null);
+
+    useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previousOverflow; };
+    }, []);
 
     const handleSearch = async () => {
         const search = keyword.trim().toLowerCase();
@@ -102,15 +109,15 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
         }
     }
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-2 backdrop-blur-md sm:p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/20 p-2 backdrop-blur-md sm:p-4">
 
             <div className="bg-[#0a0a0a]
                 border border-white/10
                 rounded-3xl sm:rounded-[2rem]
                 shadow-2xl
                 w-full
-                max-w-2xl
+                max-w-xl
                 max-h-[calc(100dvh-1rem)] sm:max-h-[90vh]
                 overflow-hidden
                 flex flex-col
@@ -144,7 +151,8 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
 
             </div>
 
-        </div>
+        </div>,
+        document.body,
     );
 }
 export default EditPrayerModal;

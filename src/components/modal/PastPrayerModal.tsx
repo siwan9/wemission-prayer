@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ArchivedRegistrationCandidate, ArchivedRegistrationDetail } from '../../types';
 import { getArchivedRegistration, searchArchivedRegistrations } from '../../services/RegistrationService';
 
@@ -14,6 +15,12 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
   const [pin, setPin] = useState('');
   const [detail, setDetail] = useState<ArchivedRegistrationDetail | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
 
   const formatPrayerDate = (date: string) => {
     const [year, month, day] = date.split('-').map(Number);
@@ -61,8 +68,8 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-md sm:p-3">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/20 p-2 backdrop-blur-md sm:p-3">
       <div className="max-h-[calc(100dvh-1rem)] w-full max-w-xl overflow-y-auto rounded-3xl border border-white/10 bg-[#0a0a0a] p-4 shadow-2xl sm:max-h-[90vh] sm:rounded-[2rem] sm:p-6 md:p-8">
         <div className="-mx-4 mb-4 flex items-start justify-between gap-3 border-b border-white/10 px-4 pb-4 sm:-mx-6 sm:mb-6 sm:px-6 sm:pb-6 md:-mx-8 md:px-8">
           <div className="min-w-0">
@@ -76,7 +83,7 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
 
         {!detail && (
           <>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+            <div className="flex items-center gap-2">
               <div className="relative min-w-0 flex-1">
                 <i
                   className="fa-solid fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
@@ -91,11 +98,11 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
                     setSelected(null);
                   }}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                  className="prayer-form-field w-full rounded-xl py-3 pl-12 pr-4"
+                  className="prayer-form-field h-12 w-full rounded-xl pl-12 pr-4 placeholder:text-gray-500"
                   placeholder="이름 또는 교회명"
                 />
               </div>
-              <button onClick={handleSearch} disabled={loading} className="min-h-12 w-full shrink-0 rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50 sm:w-auto">
+              <button onClick={handleSearch} disabled={loading} className="h-12 w-20 shrink-0 rounded-xl bg-red-600 text-sm font-bold text-white transition hover:bg-red-500 disabled:opacity-50">
                 {loading ? '검색 중' : '검색'}
               </button>
             </div>
@@ -174,7 +181,8 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 
