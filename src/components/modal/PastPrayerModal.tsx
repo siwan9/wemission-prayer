@@ -83,7 +83,7 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
 
         {!detail && (
           <>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+            <div className="flex items-center gap-2">
               <div className="relative min-w-0 flex-1">
                 <i
                   className="fa-solid fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
@@ -98,11 +98,11 @@ const PastPrayerModal: React.FC<PastPrayerModalProps> = ({ onClose }) => {
                     setSelected(null);
                   }}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                  className="prayer-form-field w-full rounded-xl py-3 pl-12 pr-4"
+                  className="prayer-form-field h-12 w-full rounded-xl pl-12 pr-4 placeholder:text-gray-500"
                   placeholder="이름 또는 교회명"
                 />
               </div>
-              <button onClick={handleSearch} disabled={loading} className="min-h-12 w-full shrink-0 rounded-xl bg-red-600 px-5 font-bold text-white disabled:opacity-50 sm:w-auto">
+              <button onClick={handleSearch} disabled={loading} className="h-12 w-20 shrink-0 rounded-xl bg-red-600 text-sm font-bold text-white transition hover:bg-red-500 disabled:opacity-50">
                 {loading ? '검색 중' : '검색'}
               </button>
             </div>

@@ -117,7 +117,7 @@ const EditPrayerModal: React.FC<EditPrayerModalProps> = ({
                 rounded-3xl sm:rounded-[2rem]
                 shadow-2xl
                 w-full
-                max-w-2xl
+                max-w-xl
                 max-h-[calc(100dvh-1rem)] sm:max-h-[90vh]
                 overflow-hidden
                 flex flex-col
