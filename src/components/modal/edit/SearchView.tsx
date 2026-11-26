@@ -30,7 +30,7 @@ export default function SearchView({
             <input
                 value={keyword}
                 onChange={(e) => onKeywordChange(e.target.value)}
-                placeholder="이름 또는 교회명을 입력하세요"
+                placeholder="이름 또는 교회명"
                 className="
                     w-full
                     rounded-xl sm:rounded-2xl
