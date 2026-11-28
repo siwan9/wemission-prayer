@@ -67,14 +67,13 @@ export default function PinVerifyView({
                 placeholder="6자리 PIN"
                 className="
                     w-full
-                    rounded-lg
-                    border
-                    border-gray-300
-                    bg-white
+                    rounded-xl
+                    border border-white/10
+                    bg-white/5
                     px-4
                     py-3
-                    text-black
-                    placeholder:text-gray-400
+                    text-white
+                    placeholder:text-gray-500
                     caret-red-500
                     focus:outline-none
                     focus:ring-2

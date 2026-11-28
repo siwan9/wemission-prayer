@@ -354,8 +354,8 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
               
               <div className={`space-y-3 ${shouldScrollParticipants ? 'max-h-[680px] overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable]' : ''}`}>
                 {selectedRegistrations.length === 0 ? (
-                  <div className="text-xs text-gray-600 text-center py-20 border-2 border-dashed border-white/5 rounded-2xl italic">
-                    이날의 기도자가 되어주세요
+                  <div className="text-xs text-gray-600 text-center py-20 border-2 border-dashed border-white/5 rounded-2xl">
+                    이 날의 기도자가 되어 주세요.
                   </div>
                 ) : (
                   selectedRegistrations.map(reg => (
@@ -385,8 +385,8 @@ const PrayerTab: React.FC<PrayerTabProps> = ({
                           </div>
                           <div className="flex flex-col gap-2">
                             <span className="text-gray-500 font-bold uppercase tracking-tighter">Prayer</span>
-                            <p className="text-gray-200 bg-white/5 p-4 rounded-xl leading-relaxed italic border border-white/5 font-light">
-                              "{reg.prayerRequest}"
+                            <p className="whitespace-pre-wrap break-words text-sm font-medium text-gray-100 bg-white/5 p-4 rounded-xl leading-relaxed border border-white/5">
+                              {reg.prayerRequest}
                             </p>
                           </div>
                         </div>
